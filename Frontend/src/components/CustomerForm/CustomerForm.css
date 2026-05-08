@@ -1,0 +1,77 @@
+/* Wrapper */
+.cuf-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.09);
+}
+
+/* Section title */
+.cuf-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6c757d;
+    margin-bottom: 2px;
+}
+
+/* Each field */
+.cuf-field {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* Label — bigger, more readable */
+.cuf-label {
+    font-size: 13px;
+    color: #ced4da;
+    margin-bottom: 5px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Input — bigger font */
+.cuf-input {
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 7px;
+    border: 1.5px solid #3a3a4a;
+    background: #1a1a2a;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.cuf-input::placeholder {
+    color: #6c757d;
+    opacity: 1;
+    font-weight: 400;
+}
+
+.cuf-input:focus {
+    outline: none;
+    border-color: #20c997;
+    box-shadow: 0 0 0 2px rgba(32, 201, 151, 0.18);
+}
+
+.cuf-input-error  { border-color: #ff4d4f !important; }
+.cuf-input-valid  { border-color: #28a745 !important; }
+
+.cuf-error {
+    color: #ff4d4f;
+    font-size: 11px;
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}

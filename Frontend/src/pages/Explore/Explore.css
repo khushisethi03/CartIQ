@@ -1,0 +1,101 @@
+.explore-container {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    height: calc(100vh - 56px);
+    box-sizing: border-box;
+    background-color: #2c3335;
+    overflow: hidden;
+}
+
+/* LEFT PANEL */
+.left-column {
+    flex: 0.68;
+    border: 1px solid #444;
+    border-radius: 10px;
+    padding: 14px;
+    box-sizing: border-box;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.first-row {
+    flex: 0 0 auto;
+    max-height: 130px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.horizontal-line {
+    margin: 12px 0;
+    border: 0;
+    border-top: 1px solid #444;
+    flex-shrink: 0;
+}
+
+.second-row {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: #495057 #2c3335;
+}
+
+.second-row::-webkit-scrollbar { width: 6px; }
+.second-row::-webkit-scrollbar-track { background: #343a40; border-radius: 4px; }
+.second-row::-webkit-scrollbar-thumb { background: #495057; border-radius: 4px; }
+
+/* RIGHT PANEL — fixed flex layout, no overlap */
+.right-column {
+    flex: 0.32;
+    border: 1px solid #444;
+    border-radius: 10px;
+    padding: 14px;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow: hidden;
+    min-width: 0;
+}
+
+/* Customer form section — fixed height */
+.customer-form-section {
+    flex: 0 0 auto;
+}
+
+.right-divider {
+    border: 0;
+    border-top: 1px solid #444;
+    margin: 10px 0;
+    flex-shrink: 0;
+}
+
+/* Cart items — flex-grow scrollable middle */
+.cart-items-section {
+    flex: 1 1 0;
+    overflow-y: auto;
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: #495057 #2c3335;
+}
+
+.cart-items-section::-webkit-scrollbar { width: 5px; }
+.cart-items-section::-webkit-scrollbar-track { background: #343a40; border-radius: 4px; }
+.cart-items-section::-webkit-scrollbar-thumb { background: #495057; border-radius: 4px; }
+
+/* Cart summary — fixed at bottom */
+.cart-summary-section {
+    flex: 0 0 auto;
+    border-top: 1px solid #444;
+    padding-top: 10px;
+}
+
+.cart-item {
+    background-color: #2c2c2c;
+    padding: 10px;
+    border-radius: 8px;
+}

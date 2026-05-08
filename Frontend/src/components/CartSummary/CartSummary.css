@@ -1,0 +1,14 @@
+.cart-summary {
+    width: 100%;
+    max-width: 380px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background-color: #1c1c2b;
+    border-radius: 10px;
+}
+.right-panel {
+    flex: 1;
+    min-width: 300px;
+}
