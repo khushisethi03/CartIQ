@@ -22,8 +22,7 @@ public class ItemEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    // Public ID for API
+    
     @Column(nullable = false, unique = true)
     private String itemId;
 
@@ -35,14 +34,11 @@ public class ItemEntity {
     @Column(nullable = false)
     private BigDecimal price;
 
-    // Image URL (MinIO / local)
     private String imgUrl;
 
-    // ADD inside ItemEntity class (after imgUrl field)
     @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
     private Integer stockQuantity = 0;
 
-    // Category relation
     @ManyToOne
     @JoinColumn(name = "category_id")
     private CategoryEntity category;

@@ -35,7 +35,7 @@ public class DashboardController {
         Long monthOrderCount = orderRepo.countByMonth(year, month);
         List<OrderResponse> recentOrders = orderService.findRecentOrders();
 
-        // Payment breakdown for pie chart
+
         List<Object[]> rawPayment = orderRepo.getCompletedPaymentMethodBreakdown();
         List<SalesAnalyticsResponse.PaymentBreakdown> paymentBreakdown = rawPayment.stream()
                 .map(r -> SalesAnalyticsResponse.PaymentBreakdown.builder()
@@ -45,7 +45,7 @@ public class DashboardController {
                         .build())
                 .collect(Collectors.toList());
 
-        // Weekly trend for bar chart
+
         List<Object[]> rawDaily = orderRepo.getDailySalesFrom(LocalDateTime.now().minusDays(7));
         List<SalesAnalyticsResponse.DailySales> weeklyTrend = rawDaily.stream()
                 .map(r -> SalesAnalyticsResponse.DailySales.builder()

@@ -14,7 +14,6 @@ public class RazorpayServiceImpl implements RazorpayService {
 
     private final RazorpayClient razorpayClient;
 
-    // FIX: create client once as a bean — not on every request
     public RazorpayServiceImpl(
             @Value("${razorpay.key.id}") String keyId,
             @Value("${razorpay.key.secret}") String keySecret) throws RazorpayException {
@@ -26,8 +25,7 @@ public class RazorpayServiceImpl implements RazorpayService {
             throws RazorpayException {
 
         JSONObject orderRequest = new JSONObject();
-        // FIX: Razorpay needs amount in paise as a whole integer
-        // Math.round avoids floating-point issues e.g. 707.0 * 100 = 70699.99999...
+
         orderRequest.put("amount", Math.round(amount * 100));
         orderRequest.put("currency", currency != null ? currency : "INR");
         orderRequest.put("receipt", "rcpt_" + System.currentTimeMillis());

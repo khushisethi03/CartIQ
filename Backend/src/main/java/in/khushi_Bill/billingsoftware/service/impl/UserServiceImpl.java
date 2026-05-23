@@ -35,19 +35,15 @@ public class UserServiceImpl implements UserService {
                 .userId(user.getUserId())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
-                .role(user.getRole())  // DB stores "ADMIN" or "USER"
+                .role(user.getRole())
                 .build();
     }
 
     private UserEntity convertToEntity(UserRequest request) {
-        // FIX: Always strip "ROLE_" prefix before saving to DB.
-        // DB stores "ADMIN" or "USER".
-        // AppUserDetailsService adds "ROLE_" back → "ROLE_ADMIN" for Spring Security.
-        // getUserRole() adds "ROLE_" back → "ROLE_ADMIN" for AuthController/frontend.
+
         String rawRole = request.getRole()
                 .toUpperCase()
-                .replace("ROLE_", "");  // "ROLE_ADMIN"→"ADMIN", "ADMIN"→"ADMIN"
-
+                .replace("ROLE_", "");
         return UserEntity.builder()
                 .userId(UUID.randomUUID().toString())
                 .email(request.getEmail())

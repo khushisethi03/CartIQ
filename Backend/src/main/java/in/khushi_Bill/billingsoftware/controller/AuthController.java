@@ -39,10 +39,8 @@ public class AuthController {
         final UserDetails userDetails = appUserDetailsService.loadUserByUsername(request.getEmail());
         final String jwtToken = jwtUtil.generateToken(userDetails);
 
-        // FIX: getUserRole() already returns "ROLE_ADMIN" / "ROLE_USER" (with prefix).
-        // Old code did "ROLE_" + getUserRole() → "ROLE_ROLE_ADMIN" — breaking admin access.
-        // Now we just use the value directly.
-        String role = userService.getUserRole(request.getEmail()); // returns "ROLE_ADMIN" or "ROLE_USER"
+
+        String role = userService.getUserRole(request.getEmail());
 
         Long userId = userService.getUserByEmail(request.getEmail()).getId();
         String name = userService.getUserByEmail(request.getEmail()).getName();

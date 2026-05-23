@@ -19,10 +19,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileUploadServiceImpl implements FileUploadService {
 
-    @Value("${minio.bucket}") // ✅ FIXED
+    @Value("${minio.bucket}")
     private String bucketName;
 
-    @Value("${minio.endpoint}") // ✅ ADD THIS
+    @Value("${minio.endpoint}")
     private String endpoint;
 
     private final S3Client s3Client;
@@ -44,7 +44,6 @@ public class FileUploadServiceImpl implements FileUploadService {
 
             s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
 
-            // ✅ MINIO URL FORMAT
             return endpoint + "/" + bucketName + "/" + key;
 
         } catch (IOException e) {

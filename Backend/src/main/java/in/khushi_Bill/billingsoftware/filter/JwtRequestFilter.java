@@ -31,7 +31,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // ✅ Allow login & public endpoints (WITH context path)
+
         if (path.equals("/api/v1.0/login") ||
                 path.equals("/api/v1.0/encode") ||
                 path.equals("/api/v1.0/admin/register")) {

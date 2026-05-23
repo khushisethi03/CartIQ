@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final FileUploadService fileUploadService;   // MinIO upload
+    private final FileUploadService fileUploadService;
     private final ItemRepository itemRepository;
 
     @Override
@@ -32,7 +32,6 @@ public class CategoryServiceImpl implements CategoryService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category already exists");
         }
 
-        // Upload image to MinIO — same service used by items
         String imgUrl = fileUploadService.uploadFile(file);
 
         CategoryEntity newCategory = convertToEntity(request);
@@ -55,7 +54,6 @@ public class CategoryServiceImpl implements CategoryService {
         CategoryEntity existingCategory = categoryRepository.findByCategoryId(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not found: " + categoryId));
 
-        // Delete from MinIO
         try {
             fileUploadService.deleteFile(existingCategory.getImgUrl());
         } catch (Exception e) {

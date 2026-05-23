@@ -31,7 +31,7 @@ public class SalesAnalyticsController {
         Double totalRevenue = orderRepo.sumTotalRevenue();
         Long totalOrders    = orderRepo.count();
 
-        // Payment breakdown
+
         List<Object[]> rawPayment = orderRepo.getCompletedPaymentMethodBreakdown();
         List<SalesAnalyticsResponse.PaymentBreakdown> paymentBreakdown = rawPayment.stream()
                 .map(r -> SalesAnalyticsResponse.PaymentBreakdown.builder()
@@ -52,8 +52,7 @@ public class SalesAnalyticsController {
                         .build())
                 .collect(Collectors.toList());
 
-        // FIX: DB now stores "USER" not "ROLE_USER" after the role normalisation fix.
-        // Also handle legacy entries that still have "ROLE_USER".
+
         List<SalesAnalyticsResponse.UserSalesSummary> userSummary = userRepo.findAll().stream()
                 .filter(u -> {
                     String role = u.getRole() != null ? u.getRole().replace("ROLE_", "").toUpperCase() : "";

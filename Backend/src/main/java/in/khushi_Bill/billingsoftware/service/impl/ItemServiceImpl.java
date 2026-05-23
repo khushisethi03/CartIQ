@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
-    private final FileUploadService fileUploadService;   // MinIO upload
+    private final FileUploadService fileUploadService;
     private final CategoryRepository categoryRepository;
     private final ItemRepository itemRepository;
 
@@ -63,7 +63,7 @@ public class ItemServiceImpl implements ItemService {
                 .name(request.getName())
                 .description(request.getDescription())
                 .price(request.getPrice())
-                .stockQuantity(0)    // default 0; admin sets via Inventory page
+                .stockQuantity(0)
                 .build();
     }
 
@@ -80,7 +80,6 @@ public class ItemServiceImpl implements ItemService {
         ItemEntity existingItem = itemRepository.findByItemId(itemId)
                 .orElseThrow(() -> new RuntimeException("Item not found: " + itemId));
 
-        // Delete from MinIO
         try {
             fileUploadService.deleteFile(existingItem.getImgUrl());
         } catch (Exception e) {
