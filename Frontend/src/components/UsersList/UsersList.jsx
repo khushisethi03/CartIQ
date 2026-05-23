@@ -3,9 +3,11 @@ import { deleteUser } from "../../Service/UserService.js";
 import toast from "react-hot-toast";
 import "./UsersList.css";
 
+const normaliseRole = (role = "") => role.replace("ROLE_", "").toUpperCase();
+
 const ROLE_CONFIG = {
-    ROLE_ADMIN: { label: "Admin", color: "#ffc107", bg: "rgba(255,193,7,0.12)", icon: "bi-shield-fill-check" },
-    ROLE_USER:  { label: "User",  color: "#20c997", bg: "rgba(32,201,151,0.12)", icon: "bi-person-fill" },
+    ADMIN: { label: "Admin", color: "#ffc107", bg: "rgba(255,193,7,0.12)", icon: "bi-shield-fill-check" },
+    USER:  { label: "User",  color: "#20c997", bg: "rgba(32,201,151,0.12)", icon: "bi-person-fill" },
 };
 
 const getInitials = (name) =>
@@ -65,10 +67,12 @@ const UsersList = ({ users, setUsers }) => {
                     </div>
                 )}
                 {filtered.map((user, i) => {
-                    const roleInfo = ROLE_CONFIG[user.role] || ROLE_CONFIG["ROLE_USER"];
+                    const key = normaliseRole(user.role);
+                    const roleInfo = ROLE_CONFIG[key] || ROLE_CONFIG["USER"];
                     return (
                         <div className="ul-card" key={user.userId || i}>
-                            <div className="ul-avatar" style={{ background: `linear-gradient(135deg, ${roleInfo.color}88, ${roleInfo.color}44)` }}>
+                            <div className="ul-avatar"
+                                style={{ background: `linear-gradient(135deg, ${roleInfo.color}88, ${roleInfo.color}44)` }}>
                                 {getInitials(user.name)}
                             </div>
                             <div className="ul-info">
@@ -77,7 +81,8 @@ const UsersList = ({ users, setUsers }) => {
                                     <i className="bi bi-envelope me-1"></i>{user.email}
                                 </div>
                             </div>
-                            <div className="ul-role-badge" style={{ color: roleInfo.color, background: roleInfo.bg }}>
+                            <div className="ul-role-badge"
+                                style={{ color: roleInfo.color, background: roleInfo.bg }}>
                                 <i className={`bi ${roleInfo.icon} me-1`}></i>
                                 {roleInfo.label}
                             </div>

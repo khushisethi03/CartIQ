@@ -29,32 +29,35 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final AppUserDetailsService appUserDetailsService;
     private final UserService userService;
-
     private final JwtUtil jwtUtil;
-    private final ActivityLogService activityLogService; // new add
-
+    private final ActivityLogService activityLogService;
 
     @PostMapping("/login")
     public AuthResponse login(@RequestBody AuthRequest request) throws Exception {
         authenticate(request.getEmail(), request.getPassword());
+
         final UserDetails userDetails = appUserDetailsService.loadUserByUsername(request.getEmail());
         final String jwtToken = jwtUtil.generateToken(userDetails);
-        String role = "ROLE_" +userService.getUserRole(request.getEmail());
 
-        // ✅ ADD HERE
+        // FIX: getUserRole() already returns "ROLE_ADMIN" / "ROLE_USER" (with prefix).
+        // Old code did "ROLE_" + getUserRole() → "ROLE_ROLE_ADMIN" — breaking admin access.
+        // Now we just use the value directly.
+        String role = userService.getUserRole(request.getEmail()); // returns "ROLE_ADMIN" or "ROLE_USER"
+
         Long userId = userService.getUserByEmail(request.getEmail()).getId();
         String name = userService.getUserByEmail(request.getEmail()).getName();
-
         activityLogService.log(userId, "LOGIN", name + " logged in");
+
         return new AuthResponse(request.getEmail(), jwtToken, role);
     }
 
     private void authenticate(String email, String password) throws Exception {
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-        }catch (DisabledException e) {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, password));
+        } catch (DisabledException e) {
             throw new Exception("User disabled");
-        }catch (BadCredentialsException e) {
+        } catch (BadCredentialsException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email or password is incorrect");
         }
     }

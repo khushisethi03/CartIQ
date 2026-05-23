@@ -21,43 +21,44 @@ const App = () => {
     const {auth} = useContext(AppContext);
 
     const LoginRoute = ({element}) => {
-        if(auth.token) {
-            return <Navigate to="/dashboard" replace />;
-        }
+        if (auth.token) return <Navigate to="/dashboard" replace />;
         return element;
-    }
+    };
 
+    // FIX: normalise role before comparing — strips accidental double prefix
     const ProtectedRoute = ({element, allowedRoles}) => {
-        if (!auth.token) {
-            return <Navigate to="/login" replace />;
-        }
-        if (allowedRoles && !allowedRoles.includes(auth.role)) {
-            return <Navigate to="/dashboard" replace />;
+        if (!auth.token) return <Navigate to="/login" replace />;
+        if (allowedRoles) {
+            // Normalise: "ROLE_ROLE_ADMIN" → "ROLE_ADMIN", "ADMIN" → "ROLE_ADMIN"
+            const role = auth.role
+                ? "ROLE_" + auth.role.toUpperCase().replace(/^(ROLE_)+/, "")
+                : "";
+            if (!allowedRoles.includes(role)) return <Navigate to="/dashboard" replace />;
         }
         return element;
-    }
+    };
 
     return (
         <div>
-            {location.pathname !== "/login" && location.pathname !== '/' && <Menubar />}
+            {location.pathname !== "/login" && location.pathname !== "/" && <Menubar />}
             <Toaster />
             <Routes>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/explore" element={<Explore />} />
-                <Route path="/category" element={<ProtectedRoute element={<ManageCategory />} allowedRoles={['ROLE_ADMIN']} />} />
-                <Route path="/users" element={<ProtectedRoute element={<ManageUsers />} allowedRoles={["ROLE_ADMIN"]} />} />
-                <Route path="/items" element={<ProtectedRoute element={<ManageItems />} allowedRoles={["ROLE_ADMIN"]} />} />
-                <Route path="/inventory" element={<ProtectedRoute element={<Inventory />} allowedRoles={["ROLE_ADMIN"]} />} />
-                <Route path="/sales-analytics" element={<ProtectedRoute element={<SalesAnalytics />} allowedRoles={["ROLE_ADMIN"]} />} />
-                <Route path="/login" element={<LoginRoute element={<Login />} />} />
-                <Route path="/orders" element={<OrderHistory />} />
+                <Route path="/category"        element={<ProtectedRoute element={<ManageCategory />}  allowedRoles={["ROLE_ADMIN"]} />} />
+                <Route path="/users"           element={<ProtectedRoute element={<ManageUsers />}      allowedRoles={["ROLE_ADMIN"]} />} />
+                <Route path="/items"           element={<ProtectedRoute element={<ManageItems />}      allowedRoles={["ROLE_ADMIN"]} />} />
+                <Route path="/inventory"       element={<ProtectedRoute element={<Inventory />}        allowedRoles={["ROLE_ADMIN"]} />} />
+                <Route path="/sales-analytics" element={<ProtectedRoute element={<SalesAnalytics />}   allowedRoles={["ROLE_ADMIN"]} />} />
+                <Route path="/settings"        element={<ProtectedRoute element={<Settings />}         allowedRoles={["ROLE_ADMIN", "ROLE_USER"]} />} />
+                <Route path="/login"   element={<LoginRoute element={<Login />} />} />
+                <Route path="/orders"  element={<OrderHistory />} />
                 <Route path="/activity" element={<ActivityLog />} />
-                <Route path="/settings" element={<ProtectedRoute element={<Settings />} allowedRoles={["ROLE_ADMIN", "ROLE_USER"]} />} />
-                <Route path="/" element={<Login />} />
-                <Route path="*" element={<NotFound />} />
+                <Route path="/"        element={<Login />} />
+                <Route path="*"        element={<NotFound />} />
             </Routes>
         </div>
     );
-}
+};
 
 export default App;

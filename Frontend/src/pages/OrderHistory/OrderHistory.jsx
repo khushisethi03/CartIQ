@@ -1,6 +1,6 @@
 import './OrderHistory.css';
-import {useEffect, useState} from "react";
-import {latestOrders} from "../../Service/OrderService.js";
+import { useEffect, useState } from "react";
+import { latestOrders } from "../../Service/OrderService.js";
 
 const OrderHistory = () => {
     const [orders, setOrders] = useState([]);
@@ -16,87 +16,96 @@ const OrderHistory = () => {
             } finally {
                 setLoading(false);
             }
-        }
+        };
         fetchOrders();
     }, []);
 
-    const formatItems = (items) => {
-        return items.map((item) => `${item.name} x ${item.quantity}`).join(', ');
-    }
+    const formatItems = (items) =>
+        items.map((item) => `${item.name} x ${item.quantity}`).join(', ');
 
-    const formatDate = (dateString) => {
-        const options = {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        }
-        return new Date(dateString).toLocaleDateString('en-US', options);
-    }
+    const formatDate = (dateString) =>
+        new Date(dateString).toLocaleString('en-IN', {
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
 
-    if (loading) {
-        return (
-            <div className="orders-history-container">
-                <div className="text-center py-4 text-light">Loading orders...</div>
+    if (loading) return (
+        <div className="oh-wrapper">
+            <div className="text-center text-light py-5">
+                <div className="spinner-border text-success" role="status" />
+                <p className="mt-2">Loading orders...</p>
             </div>
-        );
-    }
+        </div>
+    );
 
-    if (orders.length === 0) {
-        return (
-            <div className="orders-history-container">
-                <h2 className="mb-2 text-light">All Orders</h2>
-                <div className="text-center py-4 text-muted">No orders found</div>
-            </div>
-        );
-    }
+    if (orders.length === 0) return (
+        <div className="oh-wrapper">
+            <div className="text-center text-muted py-5">No orders found</div>
+        </div>
+    );
 
     return (
-        <div className="orders-history-container">
-            <h2 className="mb-1 text-light">
+        <div className="oh-wrapper">
+            <h2 className="oh-title">
                 <i className="bi bi-receipt me-2"></i>All Orders
-                <span className="ms-2 badge bg-secondary" style={{fontSize:'0.65rem',verticalAlign:'middle'}}>{orders.length}</span>
+                <span className="oh-count">{orders.length}</span>
             </h2>
 
-            {/* Scrollable table */}
-            <div className="orders-table-scroll">
-                <table className="table table-striped table-hover">
-                    <thead className="table-dark">
-                    <tr>
-                        <th>Order Id</th>
-                        <th>Customer</th>
-                        <th>Items</th>
-                        <th>Total</th>
-                        <th>Payment</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                    </tr>
+            <div className="oh-scroll">
+                <table className="oh-table">
+                    <thead>
+                        <tr>
+                            <th>Order Id</th>
+                            <th>Customer</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    {orders.map(order => (
-                        <tr key={order.orderId}>
-                            <td><small className="text-muted font-monospace">{order.orderId}</small></td>
-                            <td>
-                                {order.customerName}<br/>
-                                <small className="text-muted">{order.phoneNumber}</small>
-                            </td>
-                            <td><small>{formatItems(order.items)}</small></td>
-                            <td className="fw-semibold text-light">₹{order.grandTotal}</td>
-                            <td>{order.paymentMethod}</td>
-                            <td>
-                                <span className={`badge ${order.paymentDetails?.status === "COMPLETED" ? "bg-success" : "bg-warning text-dark"}`}>
-                                    {order.paymentDetails?.status || "PENDING"}
-                                </span>
-                            </td>
-                            <td><small>{formatDate(order.createdAt)}</small></td>
-                        </tr>
-                    ))}
+                        {orders.map(order => (
+                            <tr key={order.orderId}>
+                                <td className="oh-orderid">
+                                    {order.orderId}
+                                </td>
+                                <td>
+                                    <div className="oh-customer-name">
+                                        {order.customerName}
+                                    </div>
+                                    <div className="oh-customer-phone">
+                                        {order.phoneNumber}
+                                    </div>
+                                </td>
+                                <td className="oh-items">
+                                    {formatItems(order.items)}
+                                </td>
+                                <td className="oh-total">
+                                    ₹{order.grandTotal}
+                                </td>
+                                <td className="oh-payment">
+                                    {order.paymentMethod}
+                                </td>
+                                <td>
+                                    <span className={`oh-badge ${
+                                        order.paymentDetails?.status === "COMPLETED"
+                                            ? "oh-badge-success"
+                                            : "oh-badge-pending"
+                                    }`}>
+                                        {order.paymentDetails?.status || "PENDING"}
+                                    </span>
+                                </td>
+                                <td className="oh-date">
+                                    {formatDate(order.createdAt)}
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default OrderHistory;

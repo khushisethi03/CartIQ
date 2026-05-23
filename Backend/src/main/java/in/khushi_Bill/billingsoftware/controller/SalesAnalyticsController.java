@@ -24,12 +24,12 @@ public class SalesAnalyticsController {
         int year = today.getYear();
         int month = today.getMonthValue();
 
-        Double todaySales = orderRepo.sumSalesByDate(today);
-        Long todayOrders = orderRepo.countByOrderDate(today);
-        Double monthSales = orderRepo.sumSalesByMonth(year, month);
-        Long monthOrders = orderRepo.countByMonth(year, month);
+        Double todaySales   = orderRepo.sumSalesByDate(today);
+        Long todayOrders    = orderRepo.countByOrderDate(today);
+        Double monthSales   = orderRepo.sumSalesByMonth(year, month);
+        Long monthOrders    = orderRepo.countByMonth(year, month);
         Double totalRevenue = orderRepo.sumTotalRevenue();
-        Long totalOrders = orderRepo.count();
+        Long totalOrders    = orderRepo.count();
 
         // Payment breakdown
         List<Object[]> rawPayment = orderRepo.getCompletedPaymentMethodBreakdown();
@@ -37,11 +37,11 @@ public class SalesAnalyticsController {
                 .map(r -> SalesAnalyticsResponse.PaymentBreakdown.builder()
                         .method(r[0].toString())
                         .count((Long) r[1])
-                        .totalAmount(r[2] != null ? (Double) r[2] : 0.0)
+                        .totalAmount(r[2] != null ? ((Number) r[2]).doubleValue() : 0.0)
                         .build())
                 .collect(Collectors.toList());
 
-        // Weekly trend (last 7 days)
+        // Weekly trend
         LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
         List<Object[]> rawDaily = orderRepo.getDailySalesFrom(weekAgo);
         List<SalesAnalyticsResponse.DailySales> weeklyTrend = rawDaily.stream()
@@ -52,14 +52,18 @@ public class SalesAnalyticsController {
                         .build())
                 .collect(Collectors.toList());
 
-        // User sales summary
+        // FIX: DB now stores "USER" not "ROLE_USER" after the role normalisation fix.
+        // Also handle legacy entries that still have "ROLE_USER".
         List<SalesAnalyticsResponse.UserSalesSummary> userSummary = userRepo.findAll().stream()
-                .filter(u -> "ROLE_USER".equals(u.getRole()))
+                .filter(u -> {
+                    String role = u.getRole() != null ? u.getRole().replace("ROLE_", "").toUpperCase() : "";
+                    return "USER".equals(role);  // matches "USER" and "ROLE_USER"
+                })
                 .map(u -> {
-                    Double uTotal = orderRepo.sumSalesByUser(u.getUserId());
-                    Long uOrders = orderRepo.countOrdersByUser(u.getUserId());
-                    Double uToday = orderRepo.sumTodaySalesByUser(u.getUserId(), today);
-                    Long uTodayOrders = orderRepo.countTodayOrdersByUser(u.getUserId(), today);
+                    Double uTotal        = orderRepo.sumSalesByUser(u.getUserId());
+                    Long uOrders         = orderRepo.countOrdersByUser(u.getUserId());
+                    Double uToday        = orderRepo.sumTodaySalesByUser(u.getUserId(), today);
+                    Long uTodayOrders    = orderRepo.countTodayOrdersByUser(u.getUserId(), today);
                     return SalesAnalyticsResponse.UserSalesSummary.builder()
                             .userId(u.getUserId())
                             .userName(u.getName())

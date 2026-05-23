@@ -28,23 +28,31 @@ public class UserServiceImpl implements UserService {
         return convertToResponse(newUser);
     }
 
-    private UserResponse convertToResponse(UserEntity newUser) {
+    private UserResponse convertToResponse(UserEntity user) {
         return UserResponse.builder()
-                .name(newUser.getName())
-                .email(newUser.getEmail())
-                .userId(newUser.getUserId())
-                .createdAt(newUser.getCreatedAt())
-                .updatedAt(newUser.getUpdatedAt())
-                .role(newUser.getRole())
+                .name(user.getName())
+                .email(user.getEmail())
+                .userId(user.getUserId())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .role(user.getRole())  // DB stores "ADMIN" or "USER"
                 .build();
     }
 
     private UserEntity convertToEntity(UserRequest request) {
+        // FIX: Always strip "ROLE_" prefix before saving to DB.
+        // DB stores "ADMIN" or "USER".
+        // AppUserDetailsService adds "ROLE_" back → "ROLE_ADMIN" for Spring Security.
+        // getUserRole() adds "ROLE_" back → "ROLE_ADMIN" for AuthController/frontend.
+        String rawRole = request.getRole()
+                .toUpperCase()
+                .replace("ROLE_", "");  // "ROLE_ADMIN"→"ADMIN", "ADMIN"→"ADMIN"
+
         return UserEntity.builder()
                 .userId(UUID.randomUUID().toString())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole().toUpperCase())
+                .role(rawRole)
                 .name(request.getName())
                 .build();
     }
@@ -52,11 +60,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public String getUserRole(String email) {
         UserEntity existingUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found for the email: "+email));
-        return existingUser.getRole();
+                .orElseThrow(() -> new UsernameNotFoundException("User not found for email: " + email));
+        // DB has "ADMIN"/"USER" — return with prefix so frontend gets "ROLE_ADMIN"/"ROLE_USER"
+        String dbRole = existingUser.getRole().replace("ROLE_", ""); // safety strip if old data
+        return "ROLE_" + dbRole;
     }
 
-    @Override  //new add
+    @Override
     public UserEntity getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -66,7 +76,7 @@ public class UserServiceImpl implements UserService {
     public List<UserResponse> readUsers() {
         return userRepository.findAll()
                 .stream()
-                .map(user -> convertToResponse(user))
+                .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 

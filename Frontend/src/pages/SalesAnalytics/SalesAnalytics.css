@@ -1,4 +1,3 @@
-/* Scrollable wrapper — fills viewport below navbar */
 .analytics-wrapper {
     height: calc(100vh - 56px);
     overflow-y: auto;
@@ -50,18 +49,8 @@
 }
 
 .summary-icon { font-size: 1.6rem; }
-
-.summary-label {
-    font-size: 0.82rem;
-    color: #adb5bd;
-    margin-bottom: 2px;
-}
-
-.summary-value {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #f8f9fa;
-}
+.summary-label { font-size: 0.82rem; color: #adb5bd; margin-bottom: 2px; }
+.summary-value { font-size: 1.3rem; font-weight: 700; color: #f8f9fa; }
 
 .charts-row {
     display: grid;
@@ -90,11 +79,38 @@
     margin-bottom: 8px;
 }
 
+/* FIX: all table cells white by default */
+.user-sales-card .table td,
+.user-sales-card .table th {
+    color: #e6edf3 !important;
+    background: transparent !important;
+}
+
+/* Name column — brightest */
+.user-sales-card .table td.col-name {
+    font-weight: 600;
+    color: #f0f6fc !important;
+}
+
+/* Email column — muted gray, NOT blue */
+.user-sales-card .table td.col-email {
+    color: #8b949e !important;
+    font-size: 0.85rem;
+}
+
+/* Revenue — green */
+.user-sales-card .table td.col-revenue {
+    color: #3fb950 !important;
+    font-weight: 600;
+}
+
+/* Today's sales — amber */
+.user-sales-card .table td.col-today {
+    color: #ffc107 !important;
+    font-weight: 600;
+}
+
 @media (max-width: 768px) {
     .charts-row { grid-template-columns: 1fr; }
     .stats-row  { grid-template-columns: 1fr 1fr; }
-}
-
-@media (max-width: 480px) {
-    .stats-row { grid-template-columns: 1fr; }
 }

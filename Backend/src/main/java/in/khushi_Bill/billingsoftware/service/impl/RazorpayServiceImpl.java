@@ -3,32 +3,34 @@ package in.khushi_Bill.billingsoftware.service.impl;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
-import in.khushi_Bill.billingsoftware.io.OrderResponse;
 import in.khushi_Bill.billingsoftware.io.RazorpayOrderResponse;
 import in.khushi_Bill.billingsoftware.service.RazorpayService;
-import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Service
-@RequiredArgsConstructor
 public class RazorpayServiceImpl implements RazorpayService {
 
-    @Value("${razorpay.key.id}")
-    private String razorpayKeyId;
-    @Value("${razorpay.key.secret}")
-    private String razorpayKeySecret;
+    private final RazorpayClient razorpayClient;
+
+    // FIX: create client once as a bean — not on every request
+    public RazorpayServiceImpl(
+            @Value("${razorpay.key.id}") String keyId,
+            @Value("${razorpay.key.secret}") String keySecret) throws RazorpayException {
+        this.razorpayClient = new RazorpayClient(keyId, keySecret);
+    }
 
     @Override
-    public RazorpayOrderResponse createOrder(Double amount, String currency) throws RazorpayException {
-        RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+    public RazorpayOrderResponse createOrder(Double amount, String currency)
+            throws RazorpayException {
+
         JSONObject orderRequest = new JSONObject();
-        orderRequest.put("amount", amount * 100);
-        orderRequest.put("currency", currency);
-        orderRequest.put("receipt", "order_rcptid_"+System.currentTimeMillis());
+        // FIX: Razorpay needs amount in paise as a whole integer
+        // Math.round avoids floating-point issues e.g. 707.0 * 100 = 70699.99999...
+        orderRequest.put("amount", Math.round(amount * 100));
+        orderRequest.put("currency", currency != null ? currency : "INR");
+        orderRequest.put("receipt", "rcpt_" + System.currentTimeMillis());
         orderRequest.put("payment_capture", 1);
 
         Order order = razorpayClient.orders.create(orderRequest);

@@ -1,3 +1,4 @@
 export const AppConstants = {
-    RAZORPAY_KEY_ID: "your_key_id"
-}
+    // FIX: was "your_key_id" placeholder — Razorpay checkout modal needs the real key
+    RAZORPAY_KEY_ID: "rzp_test_SXNChDNwvmx2LK"
+};
