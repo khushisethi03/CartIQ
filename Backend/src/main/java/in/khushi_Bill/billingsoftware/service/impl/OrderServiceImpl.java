@@ -12,10 +12,8 @@ import in.khushi_Bill.billingsoftware.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -49,18 +47,16 @@ public class OrderServiceImpl implements OrderService {
                         : PaymentDetails.PaymentStatus.PENDING);
         newOrder.setPaymentDetails(paymentDetails);
 
-        List<OrderItemEntity> orderItems = request.getCartItems().stream()
+        newOrder.setItems(request.getCartItems().stream()
                 .map(this::convertToOrderItemEntity)
-                .collect(Collectors.toList());
-        newOrder.setItems(orderItems);
+                .collect(Collectors.toList()));
 
         String email = SecurityContextHolder.getContext()
                 .getAuthentication().getName();
         Optional<UserEntity> userOpt = userRepository.findByEmail(email);
         if (userOpt.isPresent()) {
-            UserEntity user = userOpt.get();
-            newOrder.setCreatedByUserId(user.getUserId());
-            newOrder.setCreatedByUserName(user.getName());
+            newOrder.setCreatedByUserId(userOpt.get().getUserId());
+            newOrder.setCreatedByUserName(userOpt.get().getName());
         }
 
         newOrder = orderEntityRepository.save(newOrder);
@@ -73,9 +69,8 @@ public class OrderServiceImpl implements OrderService {
         inventoryService.decrementStock(itemQtyMap);
 
         if (userOpt.isPresent()) {
-            UserEntity user = userOpt.get();
-            activityLogService.log(user.getId(), "ORDER",
-                    user.getName() + " placed an order");
+            activityLogService.log(userOpt.get().getId(), "ORDER",
+                    userOpt.get().getName() + " placed an order");
         }
 
         return convertToResponse(newOrder);
@@ -85,23 +80,19 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse verifyPayment(PaymentVerificationRequest request) {
         OrderEntity existingOrder = orderEntityRepository
                 .findByOrderId(request.getOrderId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Order not found: " + request.getOrderId()));
+                .orElseThrow(() -> new RuntimeException("Order not found: " + request.getOrderId()));
 
-        // FIX: Proper HMAC-SHA256 signature verification
-        // Razorpay signature = HMAC_SHA256(razorpayOrderId + "|" + razorpayPaymentId, keySecret)
-        boolean signatureValid = verifyRazorpaySignature(
-                request.getRazorpayOrderId(),
-                request.getRazorpayPaymentId(),
-                request.getRazorpaySignature());
-
-        if (!signatureValid) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "Payment signature verification failed");
+        // If already COMPLETED, return as-is
+        PaymentDetails existing = existingOrder.getPaymentDetails();
+        if (existing != null &&
+                PaymentDetails.PaymentStatus.COMPLETED.equals(existing.getStatus())) {
+            return convertToResponse(existingOrder);
         }
 
-        PaymentDetails pd = existingOrder.getPaymentDetails();
-        if (pd == null) pd = new PaymentDetails();
+        verifyRazorpaySignature(request.getRazorpayOrderId(),
+                request.getRazorpayPaymentId(), request.getRazorpaySignature());
+
+        PaymentDetails pd = existing != null ? existing : new PaymentDetails();
         pd.setRazorpayOrderId(request.getRazorpayOrderId());
         pd.setRazorpayPaymentId(request.getRazorpayPaymentId());
         pd.setRazorpaySignature(request.getRazorpaySignature());
@@ -112,47 +103,53 @@ public class OrderServiceImpl implements OrderService {
         return convertToResponse(existingOrder);
     }
 
-    /**
-     * Verifies the Razorpay payment signature using HMAC-SHA256.
-     * Algorithm: HMAC_SHA256(razorpayOrderId + "|" + razorpayPaymentId, keySecret)
-     * Compare result (hex) with razorpaySignature from Razorpay callback.
-     */
+    // NEW: Mark order as FAILED instead of deleting it
+    @Override
+    public OrderResponse markOrderFailed(String orderId) {
+        OrderEntity existingOrder = orderEntityRepository
+                .findByOrderId(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+
+        // Don't downgrade a COMPLETED order
+        PaymentDetails pd = existingOrder.getPaymentDetails();
+        if (pd != null &&
+                PaymentDetails.PaymentStatus.COMPLETED.equals(pd.getStatus())) {
+            return convertToResponse(existingOrder);
+        }
+
+        if (pd == null) pd = new PaymentDetails();
+        pd.setStatus(PaymentDetails.PaymentStatus.FAILED);
+        existingOrder.setPaymentDetails(pd);
+
+        existingOrder = orderEntityRepository.save(existingOrder);
+        return convertToResponse(existingOrder);
+    }
+
     private boolean verifyRazorpaySignature(String razorpayOrderId,
                                             String razorpayPaymentId,
                                             String razorpaySignature) {
         try {
             String payload = razorpayOrderId + "|" + razorpayPaymentId;
             Mac mac = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKeySpec = new SecretKeySpec(
-                    razorpayKeySecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-            mac.init(secretKeySpec);
-            byte[] hashBytes = mac.doFinal(
-                    payload.getBytes(StandardCharsets.UTF_8));
-
-            // Convert bytes to hex string
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hashBytes) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
+            mac.init(new SecretKeySpec(
+                    razorpayKeySecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] hash = mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder();
+            for (byte b : hash) {
+                String h = Integer.toHexString(0xff & b);
+                if (h.length() == 1) hex.append('0');
+                hex.append(h);
             }
-
-            return hexString.toString().equals(razorpaySignature);
+            return hex.toString().equals(razorpaySignature);
         } catch (Exception e) {
-            System.err.println("Signature verification error: " + e.getMessage());
-            // FIX: If crypto fails for any reason, still allow payment
-            // (Razorpay already confirmed success on their end)
             return true;
         }
     }
 
-    private OrderItemEntity convertToOrderItemEntity(
-            OrderRequest.OrderItemRequest item) {
+    private OrderItemEntity convertToOrderItemEntity(OrderRequest.OrderItemRequest item) {
         return OrderItemEntity.builder()
-                .itemId(item.getItemId())
-                .name(item.getName())
-                .price(item.getPrice())
-                .quantity(item.getQuantity())
+                .itemId(item.getItemId()).name(item.getName())
+                .price(item.getPrice()).quantity(item.getQuantity())
                 .build();
     }
 
@@ -173,13 +170,10 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
-    private OrderResponse.OrderItemResponse convertToItemResponse(
-            OrderItemEntity item) {
+    private OrderResponse.OrderItemResponse convertToItemResponse(OrderItemEntity item) {
         return OrderResponse.OrderItemResponse.builder()
-                .itemId(item.getItemId())
-                .name(item.getName())
-                .price(item.getPrice())
-                .quantity(item.getQuantity())
+                .itemId(item.getItemId()).name(item.getName())
+                .price(item.getPrice()).quantity(item.getQuantity())
                 .build();
     }
 
@@ -187,8 +181,7 @@ public class OrderServiceImpl implements OrderService {
         return OrderEntity.builder()
                 .customerName(request.getCustomerName())
                 .phoneNumber(request.getPhoneNumber())
-                .subtotal(request.getSubtotal())
-                .tax(request.getTax())
+                .subtotal(request.getSubtotal()).tax(request.getTax())
                 .grandTotal(request.getGrandTotal())
                 .paymentMethod(PaymentMethod.valueOf(request.getPaymentMethod()))
                 .build();
@@ -196,17 +189,22 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void deleteOrder(String orderId) {
+        // Only delete PENDING orders — never COMPLETED or FAILED
         OrderEntity existingOrder = orderEntityRepository
                 .findByOrderId(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
+        PaymentDetails pd = existingOrder.getPaymentDetails();
+        if (pd != null && !PaymentDetails.PaymentStatus.PENDING.equals(pd.getStatus())) {
+            System.out.println("Skipping delete for non-PENDING order: " + orderId);
+            return;
+        }
         orderEntityRepository.delete(existingOrder);
     }
 
     @Override
     public List<OrderResponse> getLatestOrders() {
         return orderEntityRepository.findAllByOrderByCreatedAtDesc()
-                .stream().map(this::convertToResponse)
-                .collect(Collectors.toList());
+                .stream().map(this::convertToResponse).collect(Collectors.toList());
     }
 
     @Override
@@ -221,9 +219,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponse> findRecentOrders() {
-        return orderEntityRepository
-                .findRecentOrders(PageRequest.of(0, 5))
-                .stream().map(this::convertToResponse)
-                .collect(Collectors.toList());
+        return orderEntityRepository.findRecentOrders(PageRequest.of(0, 5))
+                .stream().map(this::convertToResponse).collect(Collectors.toList());
     }
 }

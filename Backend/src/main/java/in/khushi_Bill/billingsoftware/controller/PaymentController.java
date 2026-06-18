@@ -21,12 +21,20 @@ public class PaymentController {
 
     @PostMapping("/create-order")
     @ResponseStatus(HttpStatus.CREATED)
-    public RazorpayOrderResponse createRazorpayOrder(@RequestBody PaymentRequest request) throws RazorpayException {
+    public RazorpayOrderResponse createRazorpayOrder(
+            @RequestBody PaymentRequest request) throws RazorpayException {
         return razorpayService.createOrder(request.getAmount(), request.getCurrency());
     }
 
     @PostMapping("/verify")
-    public OrderResponse verifyPayment(@RequestBody PaymentVerificationRequest request) {
+    public OrderResponse verifyPayment(
+            @RequestBody PaymentVerificationRequest request) {
         return orderService.verifyPayment(request);
+    }
+
+    // NEW: marks order FAILED instead of deleting it
+    @PostMapping("/failed/{orderId}")
+    public OrderResponse markFailed(@PathVariable String orderId) {
+        return orderService.markOrderFailed(orderId);
     }
 }

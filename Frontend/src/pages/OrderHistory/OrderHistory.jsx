@@ -2,6 +2,15 @@ import './OrderHistory.css';
 import { useEffect, useState } from "react";
 import { latestOrders } from "../../Service/OrderService.js";
 
+// FIX: show FAILED badge in red
+const StatusBadge = ({ status }) => {
+    if (status === "COMPLETED")
+        return <span className="oh-badge oh-badge-success">COMPLETED</span>;
+    if (status === "FAILED")
+        return <span className="oh-badge oh-badge-failed">FAILED</span>;
+    return <span className="oh-badge oh-badge-pending">PENDING</span>;
+};
+
 const OrderHistory = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -67,38 +76,18 @@ const OrderHistory = () => {
                     <tbody>
                         {orders.map(order => (
                             <tr key={order.orderId}>
-                                <td className="oh-orderid">
-                                    {order.orderId}
-                                </td>
+                                <td className="oh-orderid">{order.orderId}</td>
                                 <td>
-                                    <div className="oh-customer-name">
-                                        {order.customerName}
-                                    </div>
-                                    <div className="oh-customer-phone">
-                                        {order.phoneNumber}
-                                    </div>
+                                    <div className="oh-customer-name">{order.customerName}</div>
+                                    <div className="oh-customer-phone">{order.phoneNumber}</div>
                                 </td>
-                                <td className="oh-items">
-                                    {formatItems(order.items)}
-                                </td>
-                                <td className="oh-total">
-                                    ₹{order.grandTotal}
-                                </td>
-                                <td className="oh-payment">
-                                    {order.paymentMethod}
-                                </td>
+                                <td className="oh-items">{formatItems(order.items)}</td>
+                                <td className="oh-total">₹{order.grandTotal}</td>
+                                <td className="oh-payment">{order.paymentMethod}</td>
                                 <td>
-                                    <span className={`oh-badge ${
-                                        order.paymentDetails?.status === "COMPLETED"
-                                            ? "oh-badge-success"
-                                            : "oh-badge-pending"
-                                    }`}>
-                                        {order.paymentDetails?.status || "PENDING"}
-                                    </span>
+                                    <StatusBadge status={order.paymentDetails?.status} />
                                 </td>
-                                <td className="oh-date">
-                                    {formatDate(order.createdAt)}
-                                </td>
+                                <td className="oh-date">{formatDate(order.createdAt)}</td>
                             </tr>
                         ))}
                     </tbody>
