@@ -15,3 +15,4 @@ export const deleteOrder = async (id) =>
 // NEW: marks order as FAILED in DB instead of deleting
 export const markOrderFailed = async (orderId) =>
     await axios.post(`${BASE}/payments/failed/${orderId}`, {}, { headers: AUTH() });
+
