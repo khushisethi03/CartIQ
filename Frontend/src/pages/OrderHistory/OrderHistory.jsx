@@ -1,55 +1,54 @@
 import './OrderHistory.css';
 import { useEffect, useState } from "react";
-import { latestOrders } from "../../Service/OrderService.js";
+import { latestOrders, markOrderFailed } from "../../Service/OrderService.js";
+import toast from "react-hot-toast";
 
-// FIX: show FAILED badge in red
 const StatusBadge = ({ status }) => {
-    if (status === "COMPLETED")
-        return <span className="oh-badge oh-badge-success">COMPLETED</span>;
-    if (status === "FAILED")
-        return <span className="oh-badge oh-badge-failed">FAILED</span>;
+    if (status === "COMPLETED") return <span className="oh-badge oh-badge-success">COMPLETED</span>;
+    if (status === "FAILED")    return <span className="oh-badge oh-badge-failed">FAILED</span>;
     return <span className="oh-badge oh-badge-pending">PENDING</span>;
 };
 
 const OrderHistory = () => {
-    const [orders, setOrders] = useState([]);
+    const [orders, setOrders]   = useState([]);
     const [loading, setLoading] = useState(true);
+    const [marking, setMarking] = useState(null); // orderId being processed
 
     useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                const response = await latestOrders();
-                setOrders(response.data);
-            } catch (error) {
-                console.log(error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchOrders();
+        latestOrders()
+            .then(r => setOrders(r.data))
+            .catch(() => toast.error("Failed to load orders"))
+            .finally(() => setLoading(false));
     }, []);
 
-    const formatItems = (items) =>
-        items.map((item) => `${item.name} x ${item.quantity}`).join(', ');
+    const handleMarkFailed = async (orderId) => {
+        if (!window.confirm("Mark this order as FAILED?")) return;
+        setMarking(orderId);
+        try {
+            await markOrderFailed(orderId);
+            setOrders(prev => prev.map(o =>
+                o.orderId === orderId
+                    ? { ...o, paymentDetails: { ...o.paymentDetails, status: "FAILED" } }
+                    : o
+            ));
+            toast.success("Order marked as FAILED");
+        } catch (e) {
+            toast.error("Could not update order");
+        } finally {
+            setMarking(null);
+        }
+    };
 
-    const formatDate = (dateString) =>
-        new Date(dateString).toLocaleString('en-IN', {
-            year: 'numeric', month: 'short', day: 'numeric',
-            hour: '2-digit', minute: '2-digit'
-        });
+    const formatItems = (items) => items.map(i => `${i.name} x ${i.quantity}`).join(', ');
+    const formatDate  = (d) => new Date(d).toLocaleString('en-IN', {
+        year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
 
     if (loading) return (
         <div className="oh-wrapper">
             <div className="text-center text-light py-5">
                 <div className="spinner-border text-success" role="status" />
-                <p className="mt-2">Loading orders...</p>
             </div>
-        </div>
-    );
-
-    if (orders.length === 0) return (
-        <div className="oh-wrapper">
-            <div className="text-center text-muted py-5">No orders found</div>
         </div>
     );
 
@@ -71,25 +70,41 @@ const OrderHistory = () => {
                             <th>Payment</th>
                             <th>Status</th>
                             <th>Date</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {orders.map(order => (
-                            <tr key={order.orderId}>
-                                <td className="oh-orderid">{order.orderId}</td>
-                                <td>
-                                    <div className="oh-customer-name">{order.customerName}</div>
-                                    <div className="oh-customer-phone">{order.phoneNumber}</div>
-                                </td>
-                                <td className="oh-items">{formatItems(order.items)}</td>
-                                <td className="oh-total">₹{order.grandTotal}</td>
-                                <td className="oh-payment">{order.paymentMethod}</td>
-                                <td>
-                                    <StatusBadge status={order.paymentDetails?.status} />
-                                </td>
-                                <td className="oh-date">{formatDate(order.createdAt)}</td>
-                            </tr>
-                        ))}
+                        {orders.map(order => {
+                            const status = order.paymentDetails?.status;
+                            return (
+                                <tr key={order.orderId}>
+                                    <td className="oh-orderid">{order.orderId}</td>
+                                    <td>
+                                        <div className="oh-customer-name">{order.customerName}</div>
+                                        <div className="oh-customer-phone">{order.phoneNumber}</div>
+                                    </td>
+                                    <td className="oh-items">{formatItems(order.items)}</td>
+                                    <td className="oh-total">₹{order.grandTotal}</td>
+                                    <td className="oh-payment">{order.paymentMethod}</td>
+                                    <td><StatusBadge status={status} /></td>
+                                    <td className="oh-date">{formatDate(order.createdAt)}</td>
+                                    <td>
+                                        {/* Show "Mark Failed" button only for PENDING orders */}
+                                        {status === "PENDING" && (
+                                            <button
+                                                className="oh-fail-btn"
+                                                onClick={() => handleMarkFailed(order.orderId)}
+                                                disabled={marking === order.orderId}
+                                                title="Mark as Failed">
+                                                {marking === order.orderId
+                                                    ? <span className="spinner-border spinner-border-sm"></span>
+                                                    : <><i className="bi bi-x-circle me-1"></i>Failed</>}
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>

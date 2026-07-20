@@ -7,25 +7,63 @@ export const AppContext = createContext(null);
 export const AppContextProvider = (props) => {
 
     const [categories, setCategories] = useState([]);
-    const [itemsData, setItemsData] = useState([]);
-    const [auth, setAuth] = useState({ token: null, role: null });
-    const [cartItems, setCartItems] = useState([]);
+    const [itemsData, setItemsData]   = useState([]);
+    const [auth, setAuth]             = useState({ token: null, role: null });
+    const [cartItems, setCartItems]   = useState([]);
 
-    // Bulletproof OOS check — only blocks when it's a real number <= 0
+    // ── Load catalogue data ───────────────────────────────────────
+    // FIX: accepts a token argument so we can call it right after
+    // login (when localStorage may not be readable yet by axios)
+    const loadCatalogueData = async (token) => {
+        const t = token || localStorage.getItem("token");
+        if (!t) return; // no token → don't fetch, backend will 401
+        try {
+            const [catRes, itemRes] = await Promise.all([
+                fetchCategories(),
+                fetchItems(),
+            ]);
+            setCategories(catRes.data);
+            setItemsData(itemRes.data);
+        } catch (err) {
+            console.error("Failed to load catalogue:", err);
+        }
+    };
+
+    // On app mount: if token already exists in localStorage (page refresh),
+    // restore auth state and fetch data immediately
+    useEffect(() => {
+        const savedToken = localStorage.getItem("token");
+        const savedRole  = localStorage.getItem("role");
+        if (savedToken && savedRole) {
+            setAuth({ token: savedToken, role: savedRole });
+            loadCatalogueData(savedToken); // ← fetch with existing token
+        }
+        // No token → user is on login page, don't fetch
+    }, []);
+
+    // Called by Login.jsx after successful login
+    const setAuthData = (token, role) => {
+        setAuth({ token, role });
+        localStorage.setItem("token", token);
+        localStorage.setItem("role", role);
+        // FIX: re-fetch catalogue right after login so items/categories
+        // are available immediately when user lands on Explore/Dashboard
+        loadCatalogueData(token);
+    };
+
+    // ── Cart helpers ──────────────────────────────────────────────
     const isOOS = (itemId) => {
         const live = itemsData.find(i => i.itemId === itemId);
         return typeof live?.stockQuantity === "number" && live.stockQuantity <= 0;
     };
 
     const addToCart = (item) => {
-        if (isOOS(item.itemId)) return; // hard block
-
+        if (isOOS(item.itemId)) return;
         const existing = cartItems.find(c => c.itemId === item.itemId);
         if (existing) {
-            const live = itemsData.find(i => i.itemId === item.itemId);
+            const live  = itemsData.find(i => i.itemId === item.itemId);
             const stock = live?.stockQuantity;
             const newQty = existing.quantity + 1;
-            // Don't exceed stock if known
             if (typeof stock === "number" && newQty > stock) return;
             setCartItems(cartItems.map(c =>
                 c.itemId === item.itemId ? { ...c, quantity: newQty } : c
@@ -41,7 +79,7 @@ export const AppContextProvider = (props) => {
 
     const updateQuantity = (itemId, newQuantity) => {
         if (newQuantity < 1) return;
-        const live = itemsData.find(i => i.itemId === itemId);
+        const live  = itemsData.find(i => i.itemId === itemId);
         const stock = live?.stockQuantity;
         if (typeof stock === "number" && newQuantity > stock) return;
         setCartItems(cartItems.map(item =>
@@ -49,7 +87,8 @@ export const AppContextProvider = (props) => {
         ));
     };
 
-    // Reduces stock in local state immediately after a successful order
+    const clearCart = () => setCartItems([]);
+
     const deductStockAfterOrder = (orderedItems) => {
         setItemsData(prev => prev.map(item => {
             const ordered = orderedItems.find(o => o.itemId === item.itemId);
@@ -60,43 +99,14 @@ export const AppContextProvider = (props) => {
         }));
     };
 
-    useEffect(() => {
-        async function loadData() {
-            if (localStorage.getItem("token") && localStorage.getItem("role")) {
-                setAuthData(
-                    localStorage.getItem("token"),
-                    localStorage.getItem("role")
-                );
-            }
-            const response = await fetchCategories();
-            const itemResponse = await fetchItems();
-            setCategories(response.data);
-            setItemsData(itemResponse.data);
-        }
-        loadData();
-    }, []);
-
-    const setAuthData = (token, role) => {
-        setAuth({ token, role });
-    };
-
-    const clearCart = () => {
-        setCartItems([]);
-    };
-
     const contextValue = {
-        categories,
-        setCategories,
-        auth,
-        setAuthData,
-        itemsData,
-        setItemsData,
-        addToCart,
-        cartItems,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        deductStockAfterOrder,
+        categories, setCategories,
+        auth, setAuthData,
+        itemsData, setItemsData,
+        addToCart, cartItems,
+        removeFromCart, updateQuantity,
+        clearCart, deductStockAfterOrder,
+        loadCatalogueData,
     };
 
     return (
