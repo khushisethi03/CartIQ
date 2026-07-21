@@ -1,14 +1,16 @@
 import { useState, useContext } from "react";
 import { AppContext } from "../../context/AppContext.jsx";
+import { updateProfile } from "../../Service/ProfileService";
+import { changePassword } from "../../Service/ProfileService.js";
 import toast from "react-hot-toast";
 import "./Settings.css";
 
 const Settings = () => {
-    const { auth } = useContext(AppContext);
+    const { auth, setAuthData } = useContext(AppContext);
     const [activeTab, setActiveTab] = useState("profile");
     const [profileData, setProfileData] = useState({
-        displayName: "",
-        email: "",
+    displayName: auth.name || "",
+    email: auth.email || "",
     });
     const [pwData, setPwData] = useState({ current: "", newPw: "", confirm: "" });
     const [showPw, setShowPw] = useState({ current: false, newPw: false, confirm: false });
@@ -18,24 +20,63 @@ const Settings = () => {
         lowStockAlert: "5",
     });
 
-    const handleProfileSave = (e) => {
-        e.preventDefault();
-        toast.success("Profile updated (demo — connect to API)");
-    };
+   const handleProfileSave = async (e) => {
+    e.preventDefault();
 
-    const handlePasswordSave = (e) => {
-        e.preventDefault();
-        if (pwData.newPw !== pwData.confirm) {
-            toast.error("New passwords don't match");
-            return;
-        }
-        if (pwData.newPw.length < 6) {
-            toast.error("Password must be at least 6 characters");
-            return;
-        }
-        toast.success("Password changed (demo — connect to API)");
-        setPwData({ current: "", newPw: "", confirm: "" });
-    };
+    try {
+
+        await updateProfile({
+            name: profileData.displayName
+        });
+
+        setAuthData(
+            auth.token,
+            auth.role,
+            profileData.displayName
+        );
+
+        toast.success("Profile updated successfully");
+
+    } catch (err) {
+        toast.error("Unable to update profile");
+    }
+};
+
+   const handlePasswordSave = async (e) => {
+    e.preventDefault();
+
+    if (pwData.newPw !== pwData.confirm) {
+        toast.error("New passwords don't match");
+        return;
+    }
+
+    if (pwData.newPw.length < 6) {
+        toast.error("Password must be at least 6 characters");
+        return;
+    }
+
+    try {
+
+        await changePassword({
+            currentPassword: pwData.current,
+            newPassword: pwData.newPw
+        });
+
+        toast.success("Password updated successfully");
+
+        setPwData({
+            current: "",
+            newPw: "",
+            confirm: ""
+        });
+
+    } catch (error) {
+
+        toast.error(
+            error.response?.data?.message || "Unable to update password"
+        );
+    }
+};
 
     const handlePrefSave = (e) => {
         e.preventDefault();

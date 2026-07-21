@@ -8,3 +8,99 @@
 .category-card {
     max-width: 100% !important;
 }
+.category-list-container{
+
+    height:100%;
+
+    display:flex;
+
+    flex-direction:column;
+
+    min-height:0;
+
+}
+
+.search-section{
+
+    flex-shrink:0;
+
+    margin-bottom:12px;
+
+}
+
+.cards-section{
+
+    flex:1 1 0;
+
+    overflow-y:auto;
+
+    overflow-x:hidden;
+
+    min-height:0;
+
+    padding-right:4px;
+
+    scrollbar-width:thin;
+    scrollbar-color:#495057 #2C3335;
+
+}
+
+.cards-section::-webkit-scrollbar{
+
+    width:5px;
+
+}
+
+.cards-section::-webkit-scrollbar-thumb{
+
+    background:#495057;
+
+    border-radius:5px;
+
+}
+
+.cards-section::-webkit-scrollbar-track{
+
+    background:transparent;
+
+}
+/* ---------- TABLET ---------- */
+
+@media (max-width:1024px){
+
+    .cards-section{
+
+        padding-right:2px;
+
+    }
+
+}
+/* ---------- MOBILE ---------- */
+
+@media (max-width:768px){
+
+    .category-list-container{
+
+        height:auto;
+
+    }
+
+    .cards-section{
+
+        overflow:visible;
+
+        max-height:none;
+
+        padding-right:0;
+
+    }
+
+    .category-image{
+
+        width:54px;
+
+        height:54px;
+
+    }
+
+}

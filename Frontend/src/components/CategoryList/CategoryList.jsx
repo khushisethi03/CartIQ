@@ -29,7 +29,8 @@ const CategoryList = () => {
     }
 
     return (
-        <div className="category-list-container" style={{height:'100vh', overflowY: 'auto', overflowX: 'hidden'}}>
+        <div className="category-list-container" >
+              <div className="search-section">
             <div className="row pe-2">
                 <div className="input-group mb-3">
                     <input type="text"
@@ -44,7 +45,9 @@ const CategoryList = () => {
                         <i className="bi bi-search"></i>
                     </span>
                 </div>
+                </div>
             </div>
+            <div className="cards-section">
             <div className="row g-3 pe-2">
                 {filteredCategories.map((category, index) => (
                     <div key={index} className="col-12">
@@ -67,6 +70,7 @@ const CategoryList = () => {
                         </div>
                     </div>
                 ))}
+                </div>
             </div>
         </div>
     )

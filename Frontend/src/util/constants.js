@@ -1,4 +1,4 @@
 export const AppConstants = {
     
-    RAZORPAY_KEY_ID: "rzp_test_T31BlTUmIEvMRu"
+    RAZORPAY_KEY_ID: "rzp_test_TG4O5jJsq8zwgC"
 };

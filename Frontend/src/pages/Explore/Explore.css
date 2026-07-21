@@ -1,19 +1,21 @@
 /* ── Full page layout ── */
 .explore-page {
     display: flex;
-    height: calc(100vh - 56px);
+    height:calc(100dvh - 56px);
     background: #13151a;
     overflow: hidden;
     user-select: none; /* prevent text selection while dragging */
 }
 
 /* ══ LEFT PANEL ══ */
-.explore-left {
+.explore-left{
+    flex: 0 0 68%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    min-width: 320px;
-    max-width: 80vw;
+
+    min-width: 420px;
+    max-width: 78%;
 }
 
 /* ── Resize divider ── */
@@ -55,7 +57,7 @@
 /* ── Category strip ── */
 .category-strip {
     flex: 0 0 auto;
-    padding: 14px 16px 0 16px;
+    padding: 18px 18px 10px 18px;
     background: #13151a;
 }
 
@@ -87,15 +89,20 @@
 .cat-pill {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    border-radius: 12px;
+    gap: 12px;
+
+    padding: 14px 18px;
+
+    border-radius: 14px;
     cursor: pointer;
     border: 2px solid transparent;
     transition: all 0.2s ease;
     white-space: nowrap;
     flex-shrink: 0;
-    min-width: 130px;
+
+    min-width: 155px;
+    min-height: 72px;
+
     position: relative;
     overflow: hidden;
 }
@@ -106,8 +113,10 @@
     transform: translateY(-2px);
 }
 .cat-pill-img {
-    width: 38px; height: 38px;
-    border-radius: 9px;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+
     object-fit: cover;
     border: 2px solid rgba(255,255,255,0.2);
     flex-shrink: 0;
@@ -116,7 +125,7 @@
 
 /* FIX 3: bigger font on category names */
 .cat-pill-name {
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 700;
     color: #fff;
     line-height: 1.2;
@@ -124,7 +133,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.cat-pill-count { font-size: 0.74rem; color: rgba(255,255,255,0.6); margin-top: 1px; }
+.cat-pill-count { 
+     font-size: 0.82rem;
+    color: rgba(255,255,255,0.7);
+    margin-top: 2px;
+ }
 .cat-pill-check {
     position: absolute; top: 6px; right: 8px;
     font-size: 0.65rem; background: rgba(255,255,255,0.9);
@@ -138,7 +151,7 @@
 /* ── Search ── */
 .explore-search-bar {
     flex: 0 0 auto;
-    padding: 12px 16px;
+    padding: 16px 18px;
     background: #13151a;
 }
 .explore-search-wrap { position: relative; }
@@ -157,7 +170,8 @@
 .explore-search-input:focus { border-color: #20c997; }
 .explore-search-icon {
     position: absolute; left: 12px; top: 50%;
-    transform: translateY(-50%); color: #5c6370; font-size: 0.9rem;
+    transform: translateY(-50%);  color:#7d8793;
+    font-size:17px;
 }
 
 /* ── Items grid ── */
@@ -171,10 +185,13 @@
 .items-grid-scroll::-webkit-scrollbar { width: 5px; }
 .items-grid-scroll::-webkit-scrollbar-thumb { background: #2a2d36; border-radius: 4px; }
 
-.items-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 14px;
+.items-grid{
+    display:grid;
+
+    grid-template-columns:
+        repeat(auto-fill,minmax(200px,1fr));
+
+    gap:16px;
 }
 
 /* ── Item card ── */
@@ -196,7 +213,7 @@
 .item-card-v2.oos { opacity: 0.5; cursor: default; }
 .item-card-img-wrap {
     position: relative; background: #0d0f14;
-    height: 130px; display: flex; align-items: center;
+    height: 170px; display: flex; align-items: center;
     justify-content: center; overflow: hidden;
 }
 .item-card-img { width: 100%; height: 100%; object-fit: contain; padding: 10px; }
@@ -238,7 +255,7 @@
 /* ══ RIGHT PANEL ══ */
 .right-customer {
     flex: 0 0 auto;
-    padding: 14px 16px;
+    padding: 18px;
     border-bottom: 1px solid #1e2128;
 }
 .right-section-label {
@@ -345,4 +362,94 @@
     line-clamp: 2;
     overflow: hidden;
     margin-top: -4px;
+}
+/* TABLET*/
+
+
+@media (max-width:992px){
+
+    .explore-left{
+
+        min-width:0;
+        max-width:none;
+
+    }
+
+    .items-grid{
+
+    grid-template-columns:
+        repeat(auto-fill, minmax(180px, 1fr));
+
+    gap:14px;
+
+}
+
+    .item-card-img-wrap{
+
+        height:140px;
+
+    }
+
+}
+
+/* ======================================================
+   MOBILE
+====================================================== */
+
+@media (max-width:768px){
+
+    .explore-page{
+    display:flex;
+    flex-direction:column;
+    min-height:calc(100dvh - 56px);
+    overflow-y:auto;
+}
+
+.explore-left{
+    width:100% !important;
+    min-width:0 !important;
+    max-width:none !important;
+    flex:none !important;
+}
+
+.explore-right{
+    width:100% !important;
+    min-width:0 !important;
+    flex:none !important;
+}
+
+    .explore-resize-handle{
+        display:none;
+    }
+
+    .category-strip{
+        padding:12px;
+    }
+
+    .explore-search-bar{
+        padding:12px;
+    }
+
+    .items-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:12px;
+    }
+    .items-grid-scroll{
+    min-height:420px;
+    max-height:500px;
+    overflow-y:auto;
+}
+
+.right-cart{
+    min-height:250px;
+    max-height:350px;
+    overflow-y:auto;
+}
+
+    .item-card-img-wrap{
+        height:120px;
+    }
+
+    
+
 }

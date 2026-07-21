@@ -46,7 +46,12 @@ public class AuthController {
         String name = userService.getUserByEmail(request.getEmail()).getName();
         activityLogService.log(userId, "LOGIN", name + " logged in");
 
-        return new AuthResponse(request.getEmail(), jwtToken, role);
+        return new AuthResponse(
+                request.getEmail(),
+                jwtToken,
+                role,
+                name
+        );
     }
 
     private void authenticate(String email, String password) throws Exception {

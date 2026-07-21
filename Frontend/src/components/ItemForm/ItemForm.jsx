@@ -52,7 +52,7 @@ const ItemForm = () => {
         try {
             const response = await addItem(formData);
             if (response.status === 201) {
-                setItemsData([...itemsData, response.data]);
+                setItemsData(prev => [response.data, ...prev]);
                 setCategories(prev =>
                     prev.map(c => c.categoryId === data.categoryId ? { ...c, items: c.items + 1 } : c)
                 );

@@ -27,11 +27,28 @@ public class AIController {
     public ResponseEntity<AIResponse> ask(@RequestBody AIRequest request) {
         try {
             String fullPrompt =
-                "You are a smart retail analytics assistant for CartIQ billing software. " +
-                "Answer concisely in 2-3 sentences. Use only the data provided. Do not make up numbers.\n\n" +
-                request.getContext() +
-                "\n\nUser question: " + request.getQuestion() +
-                "\n\nAnswer specifically using the data above. Be concise.";
+                    """
+                    You are CartIQ AI.
+                    
+                    You answer only from the dashboard data provided.
+                    
+                    Rules:
+                    
+                    - Never invent numbers.
+                    - If information is missing, say "Data not available."
+                    - Keep responses under 100 words.
+                    - Use bullet points whenever possible.
+                    - Format monetary values with ₹.
+                    - If applicable, end with a short business insight.
+                    
+                    Dashboard Data:
+                    
+                    %s
+                    
+                    User Question:
+                    
+                    %s
+                    """.formatted(request.getContext(), request.getQuestion());
 
             // Build Gemini API request body
             Map<String, Object> textPart  = Map.of("text", fullPrompt);
@@ -43,12 +60,38 @@ public class AIController {
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
-            ResponseEntity<Map> response = restTemplate.exchange(
-                GEMINI_URL + geminiApiKey,
-                HttpMethod.POST,
-                entity,
-                Map.class
-            );
+            ResponseEntity<Map> response = null;
+
+            for (int attempt = 1; attempt <= 3; attempt++) {
+
+                try {
+
+                    response = restTemplate.exchange(
+                            GEMINI_URL + geminiApiKey,
+                            HttpMethod.POST,
+                            entity,
+                            Map.class
+                    );
+
+                    break;
+
+                } catch (org.springframework.web.client.HttpStatusCodeException e) {
+
+                    if (e.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE && attempt < 3) {
+
+                        System.out.println("Gemini busy... Retrying (" + attempt + "/3)");
+
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                        }
+
+                    } else {
+                        throw e;
+                    }
+                }
+            }
 
             // Extract text from Gemini response
             // Structure: candidates[0].content.parts[0].text
@@ -67,8 +110,20 @@ public class AIController {
             System.out.println("Body:");
             System.out.println(e.getResponseBodyAsString());
 
-            return ResponseEntity.status(e.getStatusCode())
-                    .body(new AIResponse(e.getResponseBodyAsString()));
+            String message;
+
+            if (e.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE) {
+
+                message = "Gemini AI is currently experiencing high demand. Please try again in a few moments.";
+
+            } else {
+
+                message = "Unable to contact Gemini AI.";
+            }
+
+            return ResponseEntity
+                    .status(e.getStatusCode())
+                    .body(new AIResponse(message));
         }
     }
 }

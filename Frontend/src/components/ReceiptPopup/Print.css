@@ -1,5 +1,38 @@
-@media print {
-    .receipt-popup .btn {
-        display: none;
-    }
+@media print{
+
+body *{
+
+visibility:hidden;
+
+}
+
+.receipt-popup,
+.receipt-popup *{
+
+visibility:visible;
+
+}
+
+.receipt-popup{
+
+position:absolute;
+
+left:0;
+
+top:0;
+
+width:100%;
+
+box-shadow:none;
+
+border:none;
+
+}
+
+.receipt-popup .btn{
+
+display:none;
+
+}
+
 }

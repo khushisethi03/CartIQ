@@ -17,4 +17,10 @@ public interface UserService {
     List<UserResponse> readUsers();
 
     void deleteUser(String id);
+
+    void updateName(String email, String name);
+
+    void changePassword(String email,
+                        String currentPassword,
+                        String newPassword);
 }

@@ -3,6 +3,7 @@ import {assets} from "../../assets/assets.js";
 import {Link, useLocation, useNavigate} from "react-router-dom";
 import {useContext} from "react";
 import {AppContext} from "../../context/AppContext.jsx";
+import useResponsive from "../../hooks/useResponsive";
 
 const normaliseRole = (role = "") =>
     "ROLE_" + role.toUpperCase().replace(/^(ROLE_)+/, "");
@@ -12,25 +13,37 @@ const Menubar = () => {
     const location = useLocation();
     const {setAuthData, auth} = useContext(AppContext);
 
-    const logout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
-        setAuthData(null, null);
-        navigate("/login");
-    };
+   const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("name");
+
+    setAuthData(null, null, null);
+
+    navigate("/login");
+};
 
     const isActive = (path) => location.pathname === path;
     const isAdmin = normaliseRole(auth.role) === "ROLE_ADMIN";
+    const { isTablet, isMobile } = useResponsive();
+
+    const compactNav = isTablet || isMobile;
 
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
             <a className="navbar-brand" href="#">
                 <img src={assets.logo} alt="Logo" height="40" />
             </a>
-            <button className="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarNav" aria-controls="navbarNav"
-                aria-expanded="false" aria-label="Toggle navigation">
-                <span className="navbar-toggler-icon"></span>
+            <button
+                className="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
+             <span className="navbar-toggler-icon"></span>
             </button>
             <div className="collapse navbar-collapse p-2" id="navbarNav">
                 <ul className="navbar-nav me-auto mb-2 mb-lg-0">
@@ -47,17 +60,26 @@ const Menubar = () => {
                     {isAdmin && (<>
                         <li className="nav-item">
                             <Link className={`nav-link nav-link-custom ${isActive('/items') ? 'active-link' : ''}`} to="/items">
-                                <i className="bi bi-box-seam me-1"></i>Manage Items
+                            <>
+                             <i className="bi bi-box-seam me-1"></i>
+                                {compactNav ? "Items" : "Manage Items"}
+                            </>
                             </Link>
                         </li>
                         <li className="nav-item">
                             <Link className={`nav-link nav-link-custom ${isActive('/category') ? 'active-link' : ''}`} to="/category">
-                                <i className="bi bi-tag me-1"></i>Manage Categories
+                            <>
+                            <i className="bi bi-tag me-1"></i>
+                                {compactNav ? "Categories" : "Manage Categories"}
+                            </>
                             </Link>
                         </li>
                         <li className="nav-item">
                             <Link className={`nav-link nav-link-custom ${isActive('/users') ? 'active-link' : ''}`} to="/users">
-                                <i className="bi bi-people me-1"></i>Manage Users
+                            <>
+                            <i className="bi bi-people me-1"></i>
+                                {compactNav ? "Users" : "Manage Users"}
+                            </>
                             </Link>
                         </li>
                         <li className="nav-item">
@@ -67,7 +89,10 @@ const Menubar = () => {
                         </li>
                         <li className="nav-item">
                             <Link className={`nav-link nav-link-custom ${isActive('/sales-analytics') ? 'active-link' : ''}`} to="/sales-analytics">
-                                <i className="bi bi-graph-up-arrow me-1"></i>Sales Analytics
+                            <>
+                            <i className="bi bi-graph-up-arrow me-1"></i>
+                                {compactNav ? "Analytics" : "Sales Analytics"}
+                            </>
                             </Link>
                         </li>
                     </>)}
@@ -86,7 +111,9 @@ const Menubar = () => {
                         <ul className="dropdown-menu dropdown-menu-end dropdown-dark-custom" aria-labelledby="navbarDropdown">
                             <li>
                                 <div className="dropdown-header-info px-3 py-2 border-bottom border-secondary">
-                                    <div className="fw-semibold text-white">{isAdmin ? "Admin" : "User"}</div>
+                                    <div className="fw-semibold text-white">
+                                        {auth.name || (isAdmin ? "Admin" : "User")}
+                                    </div>
                                     <small className="text-muted">{normaliseRole(auth.role).replace("ROLE_", "")}</small>
                                 </div>
                             </li>

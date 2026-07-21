@@ -4,15 +4,20 @@ import "./AIAssistant.css";
 const BASE_URL = "http://localhost:8080/api/v1.0";
 
 const SUGGESTED_QUESTIONS = [
-    "📈 Highest Selling Product",
+     "📈 Highest Selling Product",
     "📦 Lowest Stock",
     "💰 Today's Revenue",
-    "➕ More"
+    "💳 Most Used Payment Method",
+    "📅 Monthly Orders",
+    "📂 Top Selling Category",
+    "💵 Total Revenue",
+    "🛒 Recent Order Summary"
 ];
 
 const AIAssistant = ({ dashboardData, inventoryData }) => {
     const [open, setOpen]         = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(true); // just added
+    const [showAllSuggestions, setShowAllSuggestions] = useState(false); // just added
     const [messages, setMessages] = useState([
         { role: "assistant", text: "Hi! I'm your CartIQ AI assistant. Ask me anything about your sales, inventory, or orders — or pick a question below." ,
     time: new Date().toLocaleTimeString([], {
@@ -106,7 +111,7 @@ STOCK ALERTS:
             console.error("AI error:", e);
             setMessages(prev => [...prev, {
                 role: "assistant",
-                text: " Unable to contact the AI service. Please check the backend logs.",
+                text: " Gemini AI is currently experiencing high demand. Please try again in a few moments.",
                  time: new Date().toLocaleTimeString([], {
                  hour: "2-digit",
                  minute: "2-digit"
@@ -118,7 +123,7 @@ STOCK ALERTS:
         }
     };
 
-    console.log(messages); // just added
+   
     return (
         <>
             {/* FAB — bigger robot icon */}
@@ -169,16 +174,30 @@ STOCK ALERTS:
                         )}
                         <div ref={bottomRef}></div>
                     </div>
-                {showSuggestions && ( // just added
-                    <div className="ai-suggestions">
-                        {SUGGESTED_QUESTIONS.map((q, i) => (
-                            <button key={i} className="ai-suggest-btn"
-                                onClick={() => sendMessage(q)}
-                                disabled={loading}>
-                                {q}
-                            </button>
-                        ))}
-                    </div>)}
+                <div className="ai-suggestions">
+
+    {(showAllSuggestions
+        ? SUGGESTED_QUESTIONS
+        : SUGGESTED_QUESTIONS.slice(0, 3)
+    ).map((q, i) => (
+        <button
+            key={i}
+            className="ai-suggest-btn"
+            onClick={() => sendMessage(q)}
+            disabled={loading}
+        >
+            {q}
+        </button>
+    ))}
+
+    <button
+        className="ai-suggest-btn more-btn"
+        onClick={() => setShowAllSuggestions(!showAllSuggestions)}
+    >
+        {showAllSuggestions ? "➖ Show Less" : "➕ More"}
+    </button>
+
+</div>
 
                     <div className="ai-input-row">
                         <input className="ai-input"

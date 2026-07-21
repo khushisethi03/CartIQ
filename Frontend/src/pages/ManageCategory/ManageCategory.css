@@ -2,27 +2,105 @@
     display: flex;
     gap: 20px;
     padding: 20px;
-    height: calc(100vh - 5rem);
+    height: calc(100dvh - 56px);
     box-sizing: border-box;
     background-color: #2C3335;
 }
 
 .left-column {
     flex: 0.7;
-    border: 1px solid #ccc;
+
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 8px;
+
     padding: 16px;
-    height: 100%;
-    box-sizing: border-box;
+
     display: flex;
     flex-direction: column;
+
+    height: 100%;
+    min-height: 0;
+
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .right-column {
     flex: 0.3;
-    border: 1px solid #ccc;
+     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 8px;
     padding: 16px;
-    height: 100%;
     box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+/* ---------- TABLET ---------- */
+
+@media (max-width:1024px){
+
+    .category-container{
+
+        gap:16px;
+
+        padding:16px;
+
+    }
+
+    .left-column{
+
+        flex:0.58;
+
+        padding:14px;
+
+    }
+
+    .right-column{
+
+        flex:0.42;
+
+        padding:14px;
+
+        min-width:280px;
+
+    }
+
+}
+/* ---------- MOBILE ---------- */
+
+@media (max-width:768px){
+
+    .category-container{
+
+        flex-direction:column;
+
+        gap:16px;
+
+        padding:14px;
+
+        height:calc(100dvh - 56px);
+
+        overflow-y:auto;
+
+    }
+
+    .left-column,
+    .right-column{
+
+        width:100%;
+
+        flex:none;
+
+        min-width:0;
+
+        min-height:unset;
+
+        height:auto;
+
+        overflow:visible;
+
+    }
+
 }

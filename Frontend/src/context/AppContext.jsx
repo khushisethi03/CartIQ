@@ -8,7 +8,7 @@ export const AppContextProvider = (props) => {
 
     const [categories, setCategories] = useState([]);
     const [itemsData, setItemsData]   = useState([]);
-    const [auth, setAuth]             = useState({ token: null, role: null });
+    const [auth, setAuth]             = useState({ token: null, role: null,  name: null });
     const [cartItems, setCartItems]   = useState([]);
 
     // ── Load catalogue data ───────────────────────────────────────
@@ -34,21 +34,34 @@ export const AppContextProvider = (props) => {
     useEffect(() => {
         const savedToken = localStorage.getItem("token");
         const savedRole  = localStorage.getItem("role");
+        const savedName  = localStorage.getItem("name");
+
         if (savedToken && savedRole) {
-            setAuth({ token: savedToken, role: savedRole });
-            loadCatalogueData(savedToken); // ← fetch with existing token
-        }
+         setAuth({
+        token: savedToken,
+        role: savedRole,
+        name: savedName
+    });
+
+        loadCatalogueData(savedToken);
+    }
         // No token → user is on login page, don't fetch
     }, []);
 
     // Called by Login.jsx after successful login
-    const setAuthData = (token, role) => {
-        setAuth({ token, role });
-        localStorage.setItem("token", token);
-        localStorage.setItem("role", role);
-        // FIX: re-fetch catalogue right after login so items/categories
-        // are available immediately when user lands on Explore/Dashboard
-        loadCatalogueData(token);
+   const setAuthData = (token, role, name) => {
+    setAuth({
+        token,
+        role,
+        name
+    });
+
+    localStorage.setItem("token", token);
+    localStorage.setItem("role", role);
+    localStorage.setItem("name", name);
+
+    loadCatalogueData(token);
+
     };
 
     // ── Cart helpers ──────────────────────────────────────────────

@@ -172,3 +172,81 @@
 }
 
 .uf-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+/* ---------- TABLET ---------- */
+
+@media (max-width:1024px){
+
+    .uf-wrapper{
+
+        padding:18px;
+
+    }
+
+}
+
+
+/* ---------- MOBILE ---------- */
+
+@media (max-width:768px){
+
+    .uf-wrapper{
+
+        padding:16px;
+
+    }
+
+
+
+    .uf-header{
+
+        gap:12px;
+
+        margin-bottom:18px;
+
+    }
+
+    .uf-icon{
+
+        width:40px;
+
+        height:40px;
+
+        font-size:1rem;
+
+    }
+
+    .uf-title{
+
+        font-size:1rem;
+
+    }
+
+    .uf-row{
+
+        flex-direction:column;
+
+        gap:12px;
+
+    }
+
+    .uf-row > *{
+
+        width:100%;
+
+    }
+
+    .uf-actions{
+
+        flex-direction:column;
+
+        gap:10px;
+
+    }
+
+    .uf-actions button{
+
+        width:100%;
+
+    }
+
+}

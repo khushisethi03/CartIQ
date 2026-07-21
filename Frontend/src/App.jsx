@@ -41,7 +41,34 @@ const App = () => {
     return (
         <div>
             {location.pathname !== "/login" && location.pathname !== "/" && <Menubar />}
-            <Toaster />
+           <Toaster
+    position="top-right"
+    reverseOrder={false}
+    gutter={12}
+    toastOptions={{
+        duration: 4000,
+        style: {
+            background: "#2C3335",
+            color: "#fff",
+            border: "1px solid #4b5356",
+            borderRadius: "12px",
+            padding: "12px 16px",
+            boxShadow: "0 10px 30px rgba(0,0,0,.35)"
+        },
+        success: {
+            iconTheme: {
+                primary: "#22c55e",
+                secondary: "#fff"
+            }
+        },
+        error: {
+            iconTheme: {
+                primary: "#ef4444",
+                secondary: "#fff"
+            }
+        }
+    }}
+/>
             <Routes>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/explore" element={<Explore />} />

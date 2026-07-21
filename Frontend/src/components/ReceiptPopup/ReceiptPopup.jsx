@@ -63,7 +63,10 @@ const ReceiptPopup = ({orderDetails, onClose, onPrint}) => {
                     )
                 }
                 <div className="d-flex justify-content-end gap-3 mt-4">
-                    <button className="btn btn-warning" onClick={onPrint}>Print Receipt</button>
+                    <button className="btn btn-warning" onClick={onPrint}>
+                        <i className="bi bi-printer-fill me-2"></i>
+                            Print Receipt
+                    </button>
                     <button className="btn btn-danger" onClick={onClose}>Close</button>
                 </div>
             </div>

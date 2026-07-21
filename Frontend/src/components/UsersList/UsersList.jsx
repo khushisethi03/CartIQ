@@ -17,11 +17,12 @@ const UsersList = ({ users, setUsers }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [deletingId, setDeletingId] = useState(null);
 
-    const filtered = users.filter(u =>
-        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const keyword = searchTerm.trim().toLowerCase();
 
+    const filtered = users.filter(u =>
+    u.name.toLowerCase().includes(keyword) ||
+    u.email.toLowerCase().includes(keyword)
+    );
     const handleDelete = async (userId) => {
         if (!window.confirm("Are you sure you want to delete this user?")) return;
         setDeletingId(userId);

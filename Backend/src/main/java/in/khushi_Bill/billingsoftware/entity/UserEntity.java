@@ -32,4 +32,6 @@ public class UserEntity {
     private Timestamp createdAt;
     @UpdateTimestamp
     private Timestamp updatedAt;
+
+
 }

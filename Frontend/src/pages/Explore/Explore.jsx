@@ -1,11 +1,18 @@
 import './Explore.css';
-import { useContext, useState, useRef, useCallback } from "react";
+import {
+    useContext,
+    useState,
+    useRef,
+    useCallback
+} from "react";
+
 import { AppContext } from "../../context/AppContext.jsx";
 import { assets } from "../../assets/assets.js";
 import { createOrder, markOrderFailed } from "../../Service/OrderService.js";
 import { createRazorpayOrder, verifyPayment } from "../../Service/PaymentService.js";
 import { AppConstants } from "../../util/constants.js";
 import ReceiptPopup from "../../components/ReceiptPopup/ReceiptPopup.jsx";
+import useResponsive from "../../hooks/useResponsive";
 import toast from "react-hot-toast";
 
 const CategoryPill = ({ name, imgUrl, count, bgColor, isSelected, onClick }) => (
@@ -79,10 +86,21 @@ const Explore = () => {
 
     // ── Resizable panel ─────────────────────────────────────────
     const containerRef  = useRef(null);
-    const [leftWidth, setLeftWidth] = useState(null); // null = auto (CSS flex)
+    const getInitialWidth = () => {
+    const w = window.innerWidth;
+
+    if (w <= 768) return w;
+    if (w <= 992) return w * 0.60;
+
+    return w * 0.70;
+    };
+
+    const [leftWidth, setLeftWidth] = useState(getInitialWidth());
+    const { isDesktop, isTablet, isMobile } = useResponsive();
     const isDragging    = useRef(false);
 
     const onMouseDown = useCallback((e) => {
+        if (!isDesktop) return;
         e.preventDefault();
         isDragging.current = true;
         document.body.style.cursor = 'col-resize';
@@ -91,8 +109,8 @@ const Explore = () => {
             if (!isDragging.current || !containerRef.current) return;
             const containerRect = containerRef.current.getBoundingClientRect();
             const newWidth = ev.clientX - containerRect.left;
-            const minLeft  = 320;
-            const maxLeft  = containerRect.width - 260;
+           const minLeft = 700;
+            const maxLeft = containerRect.width - 420;
             setLeftWidth(Math.min(Math.max(newWidth, minLeft), maxLeft));
         };
 
@@ -105,7 +123,7 @@ const Explore = () => {
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
-    }, []);
+    }, [isDesktop]);
 
     const totalItems = categories.reduce((a, c) => a + (c.items || 0), 0);
     const filtered   = itemsData
@@ -187,8 +205,11 @@ const Explore = () => {
 
             {/* ══ LEFT ══ */}
             <div className="explore-left"
-                style={{ width: leftWidth ? `${leftWidth}px` : undefined,
-                         flex: leftWidth ? 'none' : '1 1 0' }}>
+                style={
+                 isMobile? {}: {
+                    width: `${leftWidth}px`,
+                    flex: "none"
+             }}>
 
                 <div className="category-strip">
                     <div className="category-strip-title">
@@ -243,8 +264,13 @@ const Explore = () => {
             </div>
 
             {/* FIX 2: drag handle for resizing */}
-            <div className="explore-resize-handle" onMouseDown={onMouseDown}
-                title="Drag to resize" />
+            {isDesktop && (
+            <div
+            className="explore-resize-handle"
+            onMouseDown={onMouseDown}
+            title="Drag to resize"
+            />
+            )}
 
             {/* ══ RIGHT ══ */}
             <div className="explore-right">

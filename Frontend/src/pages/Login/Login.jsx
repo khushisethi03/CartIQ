@@ -29,7 +29,13 @@ const Login = () => {
                 toast.success("Login successfull");
                 localStorage.setItem("token", response.data.token);
                 localStorage.setItem("role", response.data.role);
-                setAuthData(response.data.token, response.data.role);
+                localStorage.setItem("name", response.data.name);
+
+                setAuthData(
+                response.data.token,
+                response.data.role,
+                response.data.name
+            );
                 navigate("/dashboard");
             }
         } catch (error) {

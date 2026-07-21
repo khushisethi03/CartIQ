@@ -24,7 +24,18 @@ const ManageUsers = () => {
         }
         loadUsers();
     }, []);
-
+     if (loading) {
+        return (
+            <div
+                className="d-flex justify-content-center align-items-center"
+                style={{ height: "calc(100vh - 5rem)" }}
+            >
+                <div className="spinner-border text-warning" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        );
+    }
     return (
         <div className="users-container text-light">
             <div className="left-column">

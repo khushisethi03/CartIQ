@@ -1,7 +1,11 @@
 import './Dashboard.css';
 import { useEffect, useState } from "react";
 import { fetchDashboardData } from "../../Service/Dashboard.js";
-import { fetchInventory } from "../../Service/InventoryService.js";
+import {
+    fetchInventory,
+    fetchLowStock
+} from "../../Service/InventoryService.js";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
     PieChart, Pie, Cell, Tooltip,
@@ -14,16 +18,82 @@ const COLORS = ["#20c997", "#0dcaf0", "#ffc107", "#dc3545"];
 const Dashboard = () => {
     const [data, setData]           = useState(null);
     const [inventory, setInventory] = useState([]);
+    const [lowStock, setLowStock] = useState([]);
     const [loading, setLoading]     = useState(true);
 
     useEffect(() => {
         Promise.all([
-            fetchDashboardData(),
-            fetchInventory().catch(() => ({ data: [] }))
-        ])
-        .then(([dashRes, invRes]) => {
-            setData(dashRes.data);
-            setInventory(invRes.data || []);
+    fetchDashboardData(),
+    fetchInventory().catch(() => ({ data: [] })),
+    fetchLowStock().catch(() => ({ data: [] }))
+
+    ])
+        .then(([dashRes, invRes, lowStockRes]) => {
+
+    setData(dashRes.data);
+    setInventory(invRes.data || []);
+    setLowStock(lowStockRes.data || []);
+
+    const alerts = lowStockRes.data || [];
+
+if (alerts.length > 0) {
+
+    const outOfStock = alerts.filter(item => item.stockQuantity === 0).length;
+    const lowStock = alerts.filter(item => item.stockQuantity > 0).length;
+
+    toast.custom((t) => (
+
+        <div className="inventory-toast">
+
+            <div className="toast-header">
+
+                <div>
+
+                    <h6>
+                        <i className="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                        Inventory Alert
+                    </h6>
+
+                    <small>
+                        {alerts.length} products require attention.
+                    </small>
+
+                </div>
+
+                <button
+                    className="btn-close btn-close-white"
+                    onClick={() => toast.dismiss(t.id)}
+                />
+
+            </div>
+
+            <hr />
+
+            <div className="toast-summary">
+
+                <div>
+                    🔴 {outOfStock} Out of Stock
+                </div>
+
+                <div>
+                    🟡 {lowStock} Running Low
+                </div>
+
+            </div>
+
+            <Link
+                to="/inventory"
+                className="btn btn-warning btn-sm w-100 mt-3"
+                onClick={() => toast.dismiss(t.id)}
+            >
+                View Inventory
+            </Link>
+
+        </div>
+
+    ));
+
+    }
         })
         .catch(() => toast.error("Unable to load dashboard"))
         .finally(() => setLoading(false));
@@ -118,7 +188,10 @@ const Dashboard = () => {
                             </ResponsiveContainer>
                         ) : <p className="text-muted text-center py-4">No trend data yet</p>}
                     </div>
+                    
                 </div>
+            
+                 
 
                 {/* Recent Orders */}
                 <div className="recent-orders-card">

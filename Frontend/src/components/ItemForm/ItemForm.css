@@ -3,9 +3,14 @@
     background: linear-gradient(145deg, #1a1f23, #1e2428);
     border-radius: 14px;
     border: 1px solid rgba(255,255,255,0.07);
-    height: 100%;
-    overflow-y: auto;
+    flex: 1 1 0;           /* ← change from height: 100% */
+    min-height: 0;         /* ← add this */
+    overflow-y: auto;      /* keep this */
+    scrollbar-width: thin;
+    scrollbar-color: #495057 #1a1f23;
 }
+.if-wrapper::-webkit-scrollbar { width: 5px; }
+.if-wrapper::-webkit-scrollbar-thumb { background: #495057; border-radius: 4px; }
 
 .if-header {
     display: flex;
@@ -144,4 +149,17 @@ select.if-input option {
 select.if-input option:checked {
     background-color: #0dcaf0 !important;
     color: #000 !important;
+}
+@media (max-width:768px){
+
+    .if-wrapper{
+
+        overflow:visible;
+
+        min-height:auto;
+
+        padding:18px;
+
+    }
+
 }

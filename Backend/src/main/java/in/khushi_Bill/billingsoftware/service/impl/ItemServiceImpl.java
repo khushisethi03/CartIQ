@@ -9,6 +9,7 @@ import in.khushi_Bill.billingsoftware.repository.ItemRepository;
 import in.khushi_Bill.billingsoftware.service.FileUploadService;
 import in.khushi_Bill.billingsoftware.service.ItemService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -69,7 +70,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemResponse> fetchItems() {
-        return itemRepository.findAll()
+        return itemRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"))
                 .stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());

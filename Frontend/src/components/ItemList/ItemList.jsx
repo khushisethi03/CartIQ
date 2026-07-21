@@ -29,7 +29,8 @@ const ItemList = () => {
     }
 
     return (
-        <div className="category-list-container" style={{height:'100vh', overflowY: 'auto', overflowX: 'hidden'}}>
+        <div className="category-list-container" >
+             <div className="search-section">
             <div className="row">
                 <div className="input-group mb-3">
                     <input type="text"
@@ -44,7 +45,9 @@ const ItemList = () => {
                         <i className="bi bi-search"></i>
                     </span>
                 </div>
+                </div>
             </div>
+             <div className="cards-section">
             <div className="row g-3">
                 {filteredItems.map((item, index) => (
                     <div className="col-lg-12" key={index}>
@@ -71,6 +74,7 @@ const ItemList = () => {
                         </div>
                     </div>
                 ))}
+                </div>
             </div>
         </div>
     )
