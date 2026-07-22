@@ -109,7 +109,7 @@ const Inventory = () => {
                                     </td>
                                     <td>
                                         <div className="fw-semibold">{item.name}</div>
-                                        <small className="text-muted">{item.description?.substring(0, 40) || ""}</small>
+                                        <small className="text-secondary">{item.description?.substring(0, 40) || ""}</small>
                                     </td>
                                     <td><span className="badge bg-secondary">{item.categoryName || "—"}</span></td>
                                     <td className="text-info fw-bold">₹{parseFloat(item.price).toFixed(2)}</td>

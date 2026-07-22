@@ -45,7 +45,7 @@ const CategoryForm = () => {
         try {
             const response = await addCategory(formData);
             if (response.status === 201) {
-                setCategories([...categories, response.data]);
+                setCategories([response.data, ...categories]);
                 toast.success("Category added successfully!");
                 setData({ name: "", description: "", bgColor: "#1e3a5f" });
                 setImage(null);

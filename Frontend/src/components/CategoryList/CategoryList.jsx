@@ -8,7 +8,9 @@ const CategoryList = () => {
     const {categories, setCategories} = useContext(AppContext);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const filteredCategories = categories.filter(category =>
+    const filteredCategories = [...categories]
+    .sort((a, b) => b.categoryId - a.categoryId)
+    .filter(category =>
         category.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 

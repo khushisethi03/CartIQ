@@ -8,6 +8,7 @@ import in.khushi_Bill.billingsoftware.repository.ItemRepository;
 import in.khushi_Bill.billingsoftware.service.CategoryService;
 import in.khushi_Bill.billingsoftware.service.FileUploadService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,10 +44,13 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponse> read() {
-        return categoryRepository.findAll()
+
+        return categoryRepository
+                .findAll(Sort.by(Sort.Direction.DESC, "createdAt"))
                 .stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
+
     }
 
     @Override
