@@ -60,4 +60,30 @@ public interface OrderEntityRepository extends JpaRepository<OrderEntity, Long> 
             "WHERE o.paymentDetails.status = in.khushi_Bill.billingsoftware.io.PaymentDetails.PaymentStatus.COMPLETED " +
             "GROUP BY o.paymentMethod")
     List<Object[]> getCompletedPaymentMethodBreakdown();
+
+    // Bulk query — all users' total sales in ONE query instead of one per user
+    @Query("SELECT o.createdByUserId, SUM(o.grandTotal) " +
+            "FROM OrderEntity o " +
+            "GROUP BY o.createdByUserId")
+    List<Object[]> sumSalesGroupedByUser();
+
+    // Bulk query — all users' total order count in ONE query
+    @Query("SELECT o.createdByUserId, COUNT(o) " +
+            "FROM OrderEntity o " +
+            "GROUP BY o.createdByUserId")
+    List<Object[]> countOrdersGroupedByUser();
+
+    // Bulk query — all users' TODAY sales in ONE query
+    @Query("SELECT o.createdByUserId, SUM(o.grandTotal) " +
+            "FROM OrderEntity o " +
+            "WHERE DATE(o.createdAt) = :date " +
+            "GROUP BY o.createdByUserId")
+    List<Object[]> sumTodaySalesGroupedByUser(@Param("date") LocalDate date);
+
+    // Bulk query — all users' TODAY order count in ONE query
+    @Query("SELECT o.createdByUserId, COUNT(o) " +
+            "FROM OrderEntity o " +
+            "WHERE DATE(o.createdAt) = :date " +
+            "GROUP BY o.createdByUserId")
+    List<Object[]> countTodayOrdersGroupedByUser(@Param("date") LocalDate date);
 }
